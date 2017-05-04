@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.pansaian.webassistant.constant.Constant;
 import com.pansaian.webassistant.util.HttpUtil;
 
 import java.io.IOException;
@@ -28,11 +29,16 @@ public class NoteActivity extends AppCompatActivity{
 
     private Handler handler=new Handler(){
       public void handleMessage(Message msg){
-          if(msg.what==0x222){
-              Toast.makeText(NoteActivity.this, "添加成功！！", Toast.LENGTH_SHORT).show();
-              Intent intent =new Intent();
-              setResult(1,intent);
-              finish();
+          switch (msg.what){
+              case 0x222:
+                  Toast.makeText(NoteActivity.this, "添加成功！！", Toast.LENGTH_SHORT).show();
+                  Intent intent =new Intent();
+                  setResult(1,intent);
+                  finish();
+                  break;
+              case 0x221:
+                  Toast.makeText(NoteActivity.this, "网络出错了", Toast.LENGTH_SHORT).show();
+                  break;
           }
       }
     };
@@ -80,10 +86,13 @@ public class NoteActivity extends AppCompatActivity{
                     Toast.makeText(NoteActivity.this, "无数据输入！", Toast.LENGTH_SHORT).show();
                     break;
                 }else{
-                    String url="http://192.168.0.103:8080/myweb/addNotes.html?content="+content;
+                    String url= Constant.HTTP_ADDNOTES+content;
                     HttpUtil.sendOkHttpRequest(url, new okhttp3.Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
+                            Message msg=new Message();
+                            msg.what=0x221;
+                            handler.sendMessage(msg);
                         }
 
                         @Override

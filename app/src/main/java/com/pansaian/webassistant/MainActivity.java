@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.pansaian.webassistant.adapter.NotesAdapter;
+import com.pansaian.webassistant.constant.Constant;
 import com.pansaian.webassistant.entity.Notes;
 import com.pansaian.webassistant.util.HttpUtil;
 
@@ -32,29 +33,31 @@ public class MainActivity extends AppCompatActivity {
     public  TextView text;
     FloatingActionButton fab;
     public RecyclerView recyclerView;
+    //handler 处理Message并更新主UI
     private   Handler handler=new Handler(){
         public void handleMessage(Message msg){
-            if (msg.what==0x123){
-                String data=msg.getData().getString("data");
-                List<Notes> notesList=parseJsonData(data);
-                NotesAdapter adapter=new NotesAdapter(handler, notesList);
-                recyclerView.setAdapter(adapter);
-            }
-            if(msg.what==0x122){
-                Toast.makeText(MainActivity.this, "网络出差了，稍后再试！", Toast.LENGTH_SHORT).show();
-            }
-            if(msg.what==0x89){
-                Toast.makeText(MainActivity.this, "删除成功！", Toast.LENGTH_SHORT).show();
-                initData();
-            }
-            if(msg.what==0x88){
-                Toast.makeText(MainActivity.this, "删除失败！", Toast.LENGTH_SHORT).show();
-                initData();
+            switch(msg.what){
+                case 0x123:
+                    String data=msg.getData().getString("data");
+                    List<Notes> notesList=parseJsonData(data);
+                    NotesAdapter adapter=new NotesAdapter(handler, notesList);
+                    recyclerView.setAdapter(adapter);
+                    break;
+                case 0x122:
+                    Toast.makeText(MainActivity.this, "网络出差了，稍后再试！", Toast.LENGTH_SHORT).show();
+                    break;
+                case 0x89:
+                    Toast.makeText(MainActivity.this, "删除成功！", Toast.LENGTH_SHORT).show();
+                    initData();
+                    break;
+                case 0x88:
+                    Toast.makeText(MainActivity.this, "删除失败！", Toast.LENGTH_SHORT).show();
+                    initData();
+                    break;
+
             }
         }
     };
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,11 +78,10 @@ public class MainActivity extends AppCompatActivity {
         });
         initData();
     }
-
+    //新建note后，从noteActivity中获得结果并处理
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode==1){
-            System.out.println("11111111");
             initData();
         }
     }
@@ -89,21 +91,20 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.toolbar,menu);
         return super.onCreateOptionsMenu(menu);
     }
-
+    //刷新按钮
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.fresh_a:
-                Toast.makeText(this, "dddd", Toast.LENGTH_SHORT).show();
                 initData();
                 break;
             default:
         }
         return false;
     }
-
+    //从服务器获得数据
     private void initData() {
-        HttpUtil.sendOkHttpRequest("http://192.168.0.103:8080/myweb/json.html", new okhttp3.Callback() {
+        HttpUtil.sendOkHttpRequest(Constant.HTTP_JSON, new okhttp3.Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Message message=new Message();
@@ -123,13 +124,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    //将JSON数据转换成List集合
     private List<Notes> parseJsonData(String responseData) {
         Gson gson=new Gson();
         List<Notes> notesList=gson.fromJson(responseData,new TypeToken<List<Notes>>(){}.getType());
         return  notesList;
     }
-
+    //初始化toolbar
     private void initToolbar() {
         Toolbar toolbar= (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
