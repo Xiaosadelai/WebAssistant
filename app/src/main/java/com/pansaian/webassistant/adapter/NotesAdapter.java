@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.pansaian.webassistant.R;
+import com.pansaian.webassistant.constant.Constant;
 import com.pansaian.webassistant.entity.Notes;
 import com.pansaian.webassistant.util.HttpUtil;
 
@@ -41,7 +42,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder>{
 
         }
     }
-
+    //用到主线程的handler,需要在Adapter构造时候传入handler参数
     public NotesAdapter(Handler handler, List<Notes> mnotesList){
         this.handler = handler;
         notesList=mnotesList;
@@ -65,7 +66,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder>{
             public void onClick(final View v) {
                 final int id=notesList.get(position).getId();
 
-                String url="http://192.168.0.103:8080/myweb/cancelApp.html?id="+id;
+                String url= Constant.HTTP_DELETE+id;
                 HttpUtil.sendOkHttpRequest(url, new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -73,13 +74,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder>{
                         msg.what=0x88;
                         handler.sendMessage(msg);
                     }
-
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         Message msg=new Message();
                         msg.what=0x89;
                         handler.sendMessage(msg);
-
                     }
                 });
             }
@@ -90,6 +89,4 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder>{
     public int getItemCount() {
         return notesList.size();
     }
-
-
 }
