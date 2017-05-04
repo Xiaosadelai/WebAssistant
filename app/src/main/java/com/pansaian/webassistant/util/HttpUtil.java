@@ -15,6 +15,5 @@ public class HttpUtil {
                 .url(address)
                 .build();
         client.newCall(request).enqueue(callback);
-
     }
 }
