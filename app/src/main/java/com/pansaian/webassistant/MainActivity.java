@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             default:
         }
-        return false;
+        return super.onOptionsItemSelected(item);
     }
     //从服务器获得数据
     private void initData() {
